@@ -2,11 +2,9 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play the game</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Touch-Polyfill für Smartphones -->
-    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch-polyfill@1.0.1/DragDropTouch.js"></script>
 </head>
 <body>
 
@@ -17,36 +15,46 @@
         <div class="card card-deck">
             <h2>Nächste Karte</h2>
             
-            <div id="new-card" class="draggable-card hidden" draggable="true">
+            <div id="new-card" class="active-card hidden">
                 <div class="card-inner">
                     <span class="card-label">Deine Karte</span>
-                    <input type="number" id="guess-input" placeholder="Jahr raten..." min="1900" max="2026">
+                    <label for="guess-input">1. Welches Jahr schätzt du?</label>
+                    <input type="number" id="guess-input" placeholder="z. B. 1998" min="1900" max="2026">
+                    <p class="hint-text">Wähle danach unten im Zeitstrahl deinen Platz!</p>
                 </div>
             </div>
 
             <button id="draw-card-btn" class="btn primary">Neue Karte ziehen 🎴</button>
         </div>
 
-        <!-- ZEITSTRAHL (Drop-Zone) -->
+        <!-- ZEITSTRAHL -->
         <div class="card timeline-card">
             <h2>Dein Zeitstrahl (<span id="card-count">1</span> Karten)</h2>
-            <p class="instruction">Ziehe die Karte in eine der freien Lücken (Drop-Zones):</p>
             
+            <div class="timeline-header">
+                <span class="timeline-indicator top">⬆️ Ältere Lieder</span>
+            </div>
+
             <div id="timeline" class="timeline">
-                <!-- Wird dynamisch mit Karten & Drop-Zones gefüllt -->
+                <!-- Wird dynamisch befüllt -->
+            </div>
+
+            <div class="timeline-footer">
+                <span class="timeline-indicator bottom">⬇️ Neuere Lieder</span>
             </div>
             
             <button id="reset-btn" class="btn secondary">Spiel zurücksetzen</button>
         </div>
     </div>
 
-    <!-- MODAL FOR REVEAL -->
+    <!-- MODAL FÜR AUFLÖSUNG -->
     <div id="modal-overlay" class="modal-overlay hidden">
         <div class="modal">
             <h2>Echte Jahreszahl auflösen</h2>
-            <p>Scanne/Wende deine physische Karte und gib das <strong>echte Jahr</strong> ein:</p>
+            <p>2. Scanne/Wende deine physische Karte und gib das <strong>echte Jahr</strong> ein:</p>
             <input type="number" id="actual-year-input" placeholder="Echtes Jahr (z. B. 1995)" min="1900" max="2026">
             <button id="confirm-year-btn" class="btn success">Karte überprüfen 🔍</button>
+            <button id="cancel-modal-btn" class="btn text-btn">Abbrechen</button>
         </div>
     </div>
 
