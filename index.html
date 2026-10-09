@@ -11,20 +11,18 @@
     <div class="container">
         <h1>Play the game 🎵</h1>
 
-        <!-- STAPEL: Neue Karte ziehen -->
+        <!-- STAPEL: Neue Karte ziehen & Schätzen -->
         <div class="card card-deck">
             <h2>Nächste Karte</h2>
             
-            <div id="new-card" class="active-card hidden">
+            <div id="new-card" class="active-card">
                 <div class="card-inner">
-                    <span class="card-label">Deine Karte</span>
+                    <span class="card-label">Deine Schätzung</span>
                     <label for="guess-input">1. Welches Jahr schätzt du?</label>
-                    <input type="number" id="guess-input" placeholder="z. B. 1998" min="1900" max="2026">
+                    <input type="number" id="guess-input" placeholder="z. B. 1998" min="1900" max="2026" inputmode="numeric">
                     <p class="hint-text">Wähle danach unten im Zeitstrahl deinen Platz!</p>
                 </div>
             </div>
-
-            <button id="draw-card-btn" class="btn primary">Neue Karte ziehen 🎴</button>
         </div>
 
         <!-- ZEITSTRAHL -->
@@ -52,7 +50,7 @@
         <div class="modal">
             <h2>Echte Jahreszahl auflösen</h2>
             <p>2. Scanne/Wende deine physische Karte und gib das <strong>echte Jahr</strong> ein:</p>
-            <input type="number" id="actual-year-input" placeholder="Echtes Jahr (z. B. 1995)" min="1900" max="2026">
+            <input type="number" id="actual-year-input" placeholder="Echtes Jahr (z. B. 1995)" min="1900" max="2026" inputmode="numeric">
             <button id="confirm-year-btn" class="btn success">Karte überprüfen 🔍</button>
             <button id="cancel-modal-btn" class="btn text-btn">Abbrechen</button>
         </div>
