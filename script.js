@@ -20,7 +20,7 @@ drawCardBtn.addEventListener('click', () => {
     drawCardBtn.classList.add('hidden');
 });
 
-// 2. Drag & Drop Event-Handler für die Karte
+// 2. Drag-Events (auch für Touch)
 newCard.addEventListener('dragstart', (e) => {
     const guessVal = guessInput.value;
     if (!guessVal) {
@@ -28,6 +28,8 @@ newCard.addEventListener('dragstart', (e) => {
         alert("Bitte gib zuerst dein geratenes Jahr auf der Karte ein!");
         return;
     }
+    // Tastatur einklappen, damit der Bildschirm beim Ziehen frei bleibt
+    guessInput.blur();
     e.dataTransfer.setData('text/plain', guessVal);
 });
 
