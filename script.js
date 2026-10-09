@@ -1,93 +1,125 @@
-// Der aktuelle Zeitstrahl des Spielers (Start mit einer zufälligen Referenzkarte)
-let timelineYears = [2000]; 
+let timelineCards = [{ year: 2000, guess: 2000 }]; // Startkarte
+let currentTargetIndex = null;
 
-const yearInput = document.getElementById('year-input');
-const positionSelect = document.getElementById('position-select');
-const addCardBtn = document.getElementById('add-card-btn');
-const feedbackMsg = document.getElementById('feedback-msg');
+const drawCardBtn = document.getElementById('draw-card-btn');
+const newCard = document.getElementById('new-card');
+const guessInput = document.getElementById('guess-input');
 const timelineDiv = document.getElementById('timeline');
 const cardCountSpan = document.getElementById('card-count');
 
-// Beim Laden starten
+const modalOverlay = document.getElementById('modal-overlay');
+const actualYearInput = document.getElementById('actual-year-input');
+const confirmYearBtn = document.getElementById('confirm-year-btn');
+
 updateUI();
 
+// 1. Neue Karte ziehen
+drawCardBtn.addEventListener('click', () => {
+    guessInput.value = '';
+    newCard.classList.remove('hidden');
+    drawCardBtn.classList.add('hidden');
+});
+
+// 2. Drag & Drop Event-Handler für die Karte
+newCard.addEventListener('dragstart', (e) => {
+    const guessVal = guessInput.value;
+    if (!guessVal) {
+        e.preventDefault();
+        alert("Bitte gib zuerst dein geratenes Jahr auf der Karte ein!");
+        return;
+    }
+    e.dataTransfer.setData('text/plain', guessVal);
+});
+
+// 3. UI neu aufbauen (Zeitstrahl + Drop-Zones)
 function updateUI() {
-    // 1. Zeitstrahl rendern
     timelineDiv.innerHTML = '';
-    timelineYears.forEach((yr, index) => {
+    cardCountSpan.innerText = timelineCards.length;
+
+    // Drop-Zone VOR der ersten Karte
+    createDropZone(0);
+
+    timelineCards.forEach((card, index) => {
+        // Karte rendern
         const item = document.createElement('div');
         item.className = 'timeline-item';
-        item.innerHTML = `<span>Karte ${index + 1}</span> <span>${yr}</span>`;
+        item.innerHTML = `
+            <span>${card.year}</span>
+            <span class="guess-tag">(Gefallener Tipp: ${card.guess})</span>
+        `;
         timelineDiv.appendChild(item);
+
+        // Drop-Zone ZWISCHEN/NACH den Karten
+        createDropZone(index + 1);
     });
-
-    cardCountSpan.innerText = timelineYears.length;
-
-    // 2. Auswahlmöglichkeiten für Positionen im Dropdown befüllen
-    positionSelect.innerHTML = '';
-
-    // Position VOR der ersten Karte
-    let optStart = document.createElement('option');
-    optStart.value = 0;
-    optStart.innerText = `Vor der 1. Karte (vor ${timelineYears[0]})`;
-    positionSelect.appendChild(optStart);
-
-    // Positionen ZWISCHEN den Karten
-    for (let i = 0; i < timelineYears.length - 1; i++) {
-        let opt = document.createElement('option');
-        opt.value = i + 1;
-        opt.innerText = `Zwischen Karte ${i + 1} (${timelineYears[i]}) und Karte ${i + 2} (${timelineYears[i + 1]})`;
-        positionSelect.appendChild(opt);
-    }
-
-    // Position NACH der letzten Karte
-    let optEnd = document.createElement('option');
-    optEnd.value = timelineYears.length;
-    optEnd.innerText = `Nach der letzten Karte (nach ${timelineYears[timelineYears.length - 1]})`;
-    positionSelect.appendChild(optEnd);
 }
 
-// Prüf- und Einordnungslogik
-addCardBtn.addEventListener('click', () => {
-    const enteredYear = parseInt(yearInput.value);
-    const insertIndex = parseInt(positionSelect.value);
+function createDropZone(index) {
+    const zone = document.createElement('div');
+    zone.className = 'drop-zone';
+    zone.innerText = ' Hier ablegen';
 
-    if (isNaN(enteredYear)) {
-        showFeedback("Bitte gib ein gültiges Erscheinungsjahr ein!", "error");
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', () => {
+        zone.classList.remove('drag-over');
+    });
+
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        
+        currentTargetIndex = index;
+        // Öffne Modal für die Auflösung
+        actualYearInput.value = '';
+        modalOverlay.classList.remove('hidden');
+    });
+
+    timelineDiv.appendChild(zone);
+}
+
+// 4. Echtes Jahr auflösen & Regel prüfen
+confirmYearBtn.addEventListener('click', () => {
+    const actualYear = parseInt(actualYearInput.value);
+    const guessYear = parseInt(guessInput.value);
+
+    if (isNaN(actualYear)) {
+        alert("Bitte gib das echte Jahr ein!");
         return;
     }
 
-    // Nachbar-Jahre bestimmen (falls vorhanden)
-    const yearLeft = insertIndex > 0 ? timelineYears[insertIndex - 1] : -Infinity;
-    const yearRight = insertIndex < timelineYears.length ? timelineYears[insertIndex] : Infinity;
+    // Nachbarn ermitteln
+    const yearLeft = currentTargetIndex > 0 ? timelineCards[currentTargetIndex - 1].year : -Infinity;
+    const yearRight = currentTargetIndex < timelineCards.length ? timelineCards[currentTargetIndex].year : Infinity;
 
-    // REGEL: Bei gleicher Jahreszahl (<= oder >=) gilt der Zug trotzdem als KORREKT!
-    const isCorrect = (enteredYear >= yearLeft) && (enteredYear <= yearRight);
+    // KORREKTHEITS-PRÜFUNG: Inklusive gleicher Jahreszahlen (<= und >=)
+    const isCorrect = (actualYear >= yearLeft) && (actualYear <= yearRight);
 
     if (isCorrect) {
-        // Karte im Array an der gewählten Stelle einfügen
-        timelineYears.splice(insertIndex, 0, enteredYear);
-        showFeedback(`Richtig! Die Karte (${enteredYear}) wurde eingeordnet.`, "success");
-        yearInput.value = '';
+        alert(` Richtig! Die Karte (${actualYear}) passt perfekt an diese Stelle.`);
+        timelineCards.splice(currentTargetIndex, 0, { year: actualYear, guess: guessYear });
+        
+        // Reset für nächste Karte
+        newCard.classList.add('hidden');
+        drawCardBtn.classList.remove('hidden');
+        modalOverlay.classList.add('hidden');
         updateUI();
     } else {
-        showFeedback(`Falsch! ${enteredYear} passt nicht an diese Stelle.`, "error");
+        alert(` Falsch! Das Jahr ${actualYear} passt nicht zwischen ${yearLeft === -Infinity ? 'Anfang' : yearLeft} und ${yearRight === Infinity ? 'Ende' : yearRight}.`);
+        modalOverlay.classList.add('hidden');
     }
 });
 
-function showFeedback(text, type) {
-    feedbackMsg.innerText = text;
-    feedbackMsg.className = `feedback ${type}`;
-    feedbackMsg.classList.remove('hidden');
-}
-
-// Reset-Button
+// Reset
 document.getElementById('reset-btn').addEventListener('click', () => {
-    if (confirm("Möchtest du den Zeitstrahl zurücksetzen?")) {
-        const startYear = prompt("Gib das Jahr für die 1. Startkarte ein:", "2000");
-        timelineYears = [parseInt(startYear) || 2000];
-        yearInput.value = '';
-        feedbackMsg.classList.add('hidden');
+    if (confirm("Zeitstrahl zurücksetzen?")) {
+        const startYear = prompt("Jahr der 1. Startkarte:", "2000");
+        timelineCards = [{ year: parseInt(startYear) || 2000, guess: parseInt(startYear) || 2000 }];
+        newCard.classList.add('hidden');
+        drawCardBtn.classList.remove('hidden');
         updateUI();
     }
 });
